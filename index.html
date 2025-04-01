@@ -6,6 +6,8 @@
   <title>AI TermSheet Validation</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <!-- Include pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
 <body>
   <!-- Navigation Bar -->
@@ -62,11 +64,65 @@
     <a href="mailto:contact@termsheetai.com" class="cta-btn">Contact Now</a>
   </section>
 
+  <!-- PDF Upload Section -->
+  <!-- PDF Upload Section -->
+<section id="pdf-upload" class="pdf-upload">
+  <h2>Upload TermSheet PDF</h2>
+  <div class="upload-container">
+    <input type="file" id="pdf-file" accept="application/pdf" class="file-input">
+    <label for="pdf-file" class="file-label">Choose a PDF file</label>
+    <div id="pdf-text" class="pdf-text"></div>
+  </div>
+</section>
+
   <!-- Footer -->
   <footer>
     <p>&copy; 2025 TermSheet AI | All rights reserved</p>
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('.nav-links a').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+
+    // PDF file upload and text extraction
+    const pdfFileInput = document.getElementById('pdf-file');
+    const pdfTextDiv = document.getElementById('pdf-text');
+
+    pdfFileInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const typedArray = new Uint8Array(reader.result);
+          pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
+            let pdfText = '';
+            const totalPages = pdf.numPages;
+
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+              pdf.getPage(pageNum).then(function (page) {
+                page.getTextContent().then(function (textContent) {
+                  textContent.items.forEach(function (item) {
+                    pdfText += item.str + ' ';
+                  });
+                  pdfTextDiv.innerText = pdfText;
+                });
+              });
+            }
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert('Please upload a valid PDF file.');
+      }
+    });
+  </script>
 </body>
 </html>
